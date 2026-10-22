@@ -1,8 +1,7 @@
 # procwatch
 
-[![CI](https://github.com/OWNER/procwatch/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/procwatch/actions/workflows/ci.yml)
+[![CI](https://github.com/gorgon-ops/procwatch/actions/workflows/ci.yml/badge.svg)](https://github.com/gorgon-ops/procwatch/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
 
 A process watchdog for Python. It launches your processes, watches them for
 hangs, crashes and runaway resource use, and restarts them when they stop
@@ -358,6 +357,3 @@ A deliberately deadlocked worker sailed straight past the watchdog, beating
 away, until `progress_timeout` was added to measure the thing that actually
 mattered.
 
-## License
-
-MIT
