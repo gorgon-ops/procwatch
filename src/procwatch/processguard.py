@@ -72,7 +72,7 @@ class _JobObjectGuard(ProcessGuard):
         from ctypes import wintypes
 
         self._ctypes = ctypes
-        self._kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        self._kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)  # type: ignore[attr-defined,unused-ignore]
 
         class IO_COUNTERS(ctypes.Structure):
             _fields_ = [
@@ -109,7 +109,7 @@ class _JobObjectGuard(ProcessGuard):
 
         self._job = self._kernel32.CreateJobObjectW(None, None)
         if not self._job:
-            raise ctypes.WinError(ctypes.get_last_error())
+            raise ctypes.WinError(ctypes.get_last_error())  # type: ignore[attr-defined,unused-ignore]
 
         limits = EXTENDED_LIMIT_INFORMATION()
         limits.BasicLimitInformation.LimitFlags = self._LIMIT_KILL_ON_JOB_CLOSE
@@ -121,10 +121,10 @@ class _JobObjectGuard(ProcessGuard):
             ctypes.sizeof(limits),
         )
         if not ok:
-            error = ctypes.get_last_error()
+            error = ctypes.get_last_error()  # type: ignore[attr-defined,unused-ignore]
             self._kernel32.CloseHandle(self._job)
             self._job = None
-            raise ctypes.WinError(error)
+            raise ctypes.WinError(error)  # type: ignore[attr-defined,unused-ignore]
 
     def adopt(self, pid: int) -> bool:
         """The child is already running when its PID comes back, so a grandchild spawned
