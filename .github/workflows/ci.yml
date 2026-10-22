@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint and type check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+
+      - name: Ruff
+        run: python -m ruff check --output-format=github .
+
+      - name: Mypy
+        run: python -m mypy
+
+  test:
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # The orphan guard is implemented differently per platform -- a Job
+        # Object on Windows, PR_SET_PDEATHSIG on Linux -- so both are tested.
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+
+      - name: Test
+        # The suite launches real subprocesses and waits on real timeouts, so
+        # it is slower than it is large. -p no:randomly keeps the ordering
+        # stable for the integration tests that bind sockets.
+        run: python -m pytest -v --durations=10
+
+      - name: Smoke-test the CLI
+        run: |
+          python -m procwatch --version
+          python -m procwatch init smoke.toml
+          python -m procwatch run --name smoke --interval 0.5 --port 0 -- python -c "print('ok')"

@@ -1,0 +1,38 @@
+# One worker per data directory, all supervised by a single procwatch process.
+#
+#   procwatch run -c examples/pipeline.toml
+#
+# Each worker hangs deliberately after 5 files. Watch procwatch notice, capture
+# the stuck stack trace, restart it, and eventually give up on it.
+
+[watch]
+host = "127.0.0.1"
+port = 5051
+interval = 1.0
+console_level = "INFO"
+log_file = "../logs/pipeline.log"
+metrics_file = "../logs/pipeline-metrics.json"
+metrics_history = "../logs/pipeline-metrics.jsonl"
+output_dir = "../logs/output"   # each worker's stdout/stderr, stderr merged in
+metrics_interval = 5.0
+
+[[targets]]
+name = "ingest-{dirname}"
+for_each_dir = "data/*"
+# {dir} expands to the full path of each match, so the worker finds its input
+# regardless of cwd. cwd is pinned here to where flaky_worker.py lives; leave
+# it out and each worker runs inside its own data directory instead.
+cwd = "."
+cmd = ["python", "flaky_worker.py", "--input", "{dir}", "--hang-after", "5"]
+heartbeat_timeout = 6.0      # process unresponsive / dead
+progress_timeout = 6.0       # process alive but not getting anywhere
+startup_grace = 12.0
+on_hang = "restart"
+max_memory_mb = 512
+max_restarts = 3
+restart_window = 120.0
+backoff = 2.0
+
+[[alerts]]
+type = "log"
+min_interval = 10.0

@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+
+# Runtime output
+logs/
+*.log
+metrics.json
+metrics*.jsonl
+.ruff_cache/
